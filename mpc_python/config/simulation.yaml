@@ -1,0 +1,46 @@
+target_speed: 1.0
+
+sensor: # fake camera
+  max_range: 4.0
+  fov_deg: 90.0 # tune this for fast obstacles
+
+path:
+  waypoints_x: [0, 3, 4, 6, 10, 11, 12, 6, 1, 0]
+  waypoints_y: [0, 0, 2, 4, 3, 3, -1, -6, -2, -2]
+#  waypoints_x: [ 0, 1, 1, 0 ]
+#  waypoints_y: [ 0, 0, 1, 1 ]
+  interpolation_step: 0.05
+
+# NOTE: avoid 0.0 lateral offset.
+# The half-plane approximation issue:
+# obstacle center on the reference path centerline breaks the normals.
+obstacles:  # set to [] to disable obstacle avoidance
+  - distance: 3.0 # along path lenght
+    speed: 0.1 # along path, set to 0.0 for static obstacles [m/s]
+    radius: 0.4 # [m]
+    lateral_offset: 0.3 # from centeline [m]
+  - distance: 5.5
+    speed: 0.25
+    radius: 0.3
+    lateral_offset: -0.25
+  - distance: 8.5
+    speed: 0.20
+    radius: 0.5
+    lateral_offset: 0.35
+
+  - distance: 13.5
+    speed: 0.20
+    radius: 0.5
+    lateral_offset: 0.35
+#  - distance: 25.0
+#    speed: 0.00
+#    radius: 3
+#    lateral_offset: 0.35
+
+start:
+  x: -0.0
+  y: 0.3
+  heading: 0.0
+  velocity: 0.0 # nosim only
+
+goal_threshold: 0.2

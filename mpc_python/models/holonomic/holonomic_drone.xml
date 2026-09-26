@@ -1,0 +1,77 @@
+<mujoco model="planar_holonomic_drone">
+  <!--
+    Simple planar MuJoCo plant for the holonomic MPC demo.
+
+    Generalized coordinates / velocities:
+      x_joint   -> world X position / vx
+      y_joint   -> world Y position / vy
+      yaw_joint -> yaw / yaw_rate
+
+    The x/y slide joints are defined before the yaw hinge so their axes remain
+    fixed in the world frame.  This matches the MPC state convention where
+    vx and vy are independent world/local-navigation-frame velocities.
+  -->
+
+  <compiler autolimits="true"/>
+  <option timestep="0.002" integrator="implicitfast" gravity="0 0 0"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <asset>
+    <texture name="grid_tex" type="2d" builtin="checker"
+             width="512" height="512" rgb1="0.12 0.15 0.18" rgb2="0.22 0.25 0.28"/>
+    <material name="grid_mat" texture="grid_tex" texrepeat="2 2" texuniform="true" reflectance="0.08"/>
+  </asset>
+
+  <worldbody>
+    <geom name="ground" type="plane" size="30 30 0.1" material="grid_mat"/>
+    <light pos="0 0 8" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+
+    <body name="holonomic_drone" pos="0 0 0.16">
+      <!-- Composite planar joint: two world-frame translations + yaw. -->
+      <joint name="x_joint" type="slide" axis="1 0 0" damping="0.15" armature="0.01"/>
+      <joint name="y_joint" type="slide" axis="0 1 0" damping="0.15" armature="0.01"/>
+      <joint name="yaw_joint" type="hinge" axis="0 0 1" damping="0.03" armature="0.005"/>
+
+      <!-- Explicit planar vehicle inertia. -->
+      <inertial pos="0 0 0" mass="2.0" diaginertia="0.045 0.045 0.075"/>
+
+      <!-- Simple quad/drone-like visual body.  Contacts are disabled because
+           altitude is constrained by the planar joint model. -->
+      <geom type="box" size="0.13 0.09 0.045" rgba="0.18 0.45 0.8 1"
+            contype="0" conaffinity="0"/>
+      <geom type="capsule" fromto="-0.30 -0.30 0  0.30 0.30 0" size="0.025"
+            rgba="0.25 0.25 0.28 1" contype="0" conaffinity="0"/>
+      <geom type="capsule" fromto="-0.30 0.30 0  0.30 -0.30 0" size="0.025"
+            rgba="0.25 0.25 0.28 1" contype="0" conaffinity="0"/>
+
+      <geom type="cylinder" pos="0.30 0.30 0" size="0.075 0.018"
+            rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
+      <geom type="cylinder" pos="-0.30 -0.30 0" size="0.075 0.018"
+            rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
+      <geom type="cylinder" pos="-0.30 0.30 0" size="0.075 0.018"
+            rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
+      <geom type="cylinder" pos="0.30 -0.30 0" size="0.075 0.018"
+            rgba="0.12 0.12 0.14 1" contype="0" conaffinity="0"/>
+
+      <!-- Front marker makes independent yaw easy to see. -->
+      <geom name="front_marker" type="sphere" pos="0.16 0 0.045" size="0.045"
+            rgba="1 0.35 0.1 1" contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!--
+      These are LOW-LEVEL velocity servos, not the MPC inputs.
+      The Python demo integrates [ax, ay, alpha] every physics step to produce
+      continuously-ramped [vx_cmd, vy_cmd, yaw_rate_cmd], just like the car
+      demo integrates acceleration into its wheel velocity target.
+    -->
+    <velocity name="vx_servo" joint="x_joint" kv="20" forcerange="-20 20"/>
+    <velocity name="vy_servo" joint="y_joint" kv="20" forcerange="-20 20"/>
+    <velocity name="yaw_rate_servo" joint="yaw_joint" kv="4" forcerange="-3 3"/>
+  </actuator>
+</mujoco>

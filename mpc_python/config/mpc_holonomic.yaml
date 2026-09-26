@@ -1,0 +1,41 @@
+model:
+  vehicle:
+    # Circular XY footprint used by the existing half-plane obstacle logic.
+    radius: 0.25
+
+    # Independent world/local-frame velocity limits.
+    max_vx: 2.0             # m/s
+    max_vy: 2.0             # m/s
+    max_yaw_rate: 1.5       # rad/s
+
+    # MPC inputs: [ax, ay, angular_acceleration].
+    max_ax: 1.5             # m/s^2
+    max_ay: 1.5             # m/s^2
+    max_yaw_accel: 2.0      # rad/s^2
+
+    # Same concept as max_d_acc in the car controller: acceleration slew rate.
+    max_jerk_x: 3.0         # m/s^3
+    max_jerk_y: 3.0         # m/s^3
+    max_yaw_jerk: 4.0       # rad/s^3
+
+controller:
+  prediction:
+    horizon_time: 4.0       # seconds
+    timestep: 0.2           # seconds
+
+  # State mapping:
+  # [x, y, vx, vy, theta, omega]
+  weights:
+    state_cost: [40, 40, 8, 8, 12, 3]
+    final_state_cost: [80, 80, 12, 12, 20, 5]
+
+    # Input mapping:
+    # [ax, ay, angular_acceleration]
+    input_cost: [1.0, 1.0, 0.5]
+
+    # Penalizes changes in acceleration -> smoother jerk.
+    input_rate_cost: [5.0, 5.0, 2.0]
+
+  obstacle:
+    safety_margin: 0.25
+    slack_penalty: 100000
