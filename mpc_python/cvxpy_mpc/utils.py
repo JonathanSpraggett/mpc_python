@@ -119,8 +119,11 @@ def get_ref_trajectory(
     interp_points = [d * DT * target_v + start_dist for d in range(0, K + 1)]
 
     # Compute interpolation (automatically maps across all K + 1 points)
+    # Finds the
     xref[0, :] = np.interp(interp_points, cdist, path[0, :])
     xref[1, :] = np.interp(interp_points, cdist, path[1, :])
+    # xref[0, :] = np.interp(interp_points, cdist, path[0, :])
+    # xref[1, :] = np.interp(interp_points, cdist, path[1, :])
     xref[2, :] = target_v
     xref[3, :] = np.interp(interp_points, cdist, path[2, :])
 

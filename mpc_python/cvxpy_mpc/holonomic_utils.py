@@ -54,8 +54,8 @@ def get_holonomic_ref_trajectory(
 
     xref[0] = np.interp(interp_distance, cumulative_distance, path[0])
     xref[1] = np.interp(interp_distance, cumulative_distance, path[1])
-    # xref[0] = path[0, nearest_idx]  # X
-    # xref[1] = path[1, nearest_idx]  # Y
+    # xref[0] = path[0, nearest_idx:nearest_idx+K+1]  # X
+    # xref[1] = path[1, nearest_idx:nearest_idx+K+1]  # Y
     # Interpolate an unwrapped angle to avoid averaging across +/-pi.
     path_theta = np.unwrap(path[2])
     theta_ref = np.interp(interp_distance, cumulative_distance, path_theta)

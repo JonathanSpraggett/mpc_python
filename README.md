@@ -6,7 +6,7 @@ A (hopefully) easy-to-follow Iterative MPC tracking controller built with CVXPY 
   <img src="img/banner.png" width="500" />
   <figcaption>MuJoCo simulation with the mushr car model</figcaption>
 </figure>
-
+uv pip install -e .
 This mainly uses **[CVXPY](https://www.cvxpy.org/)** to maintain a strict quadratic programming framework rather than relying on a non-linear solver like CasADi (which I love btw!). But, implementing an iMPC, we can still bridge the gap between convex optimization and real-world vehicle physics, allowing you to handle non-linear kinematics through iterative linearization.
 
 Note: I've also preserved my original notebooks on Model Predictive Control for path-following problems here for historical context, a bit outdated.
