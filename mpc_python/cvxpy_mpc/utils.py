@@ -19,6 +19,8 @@ def compute_path_from_wp(
     Returns:
         Array of shape (3, N) with rows [x, y, heading] along the path.
     """
+    # TODO could be a class, also calc curvature
+
     # Fit a cubic spline (B-spline) to the waypoints
     # s=0 forces the spline to pass exactly through your waypoints.
     tck, u = splprep([start_xp, start_yp], s=0.0)
@@ -27,12 +29,18 @@ def compute_path_from_wp(
     u_fine = np.linspace(0, 1, 2000)
     x_fine, y_fine = splev(u_fine, tck)
 
+    # calculate arc length
     arc_lengths = np.zeros(len(u_fine))
     arc_lengths[1:] = np.cumsum(np.hypot(np.diff(x_fine), np.diff(y_fine)))
     total_len = arc_lengths[-1]
 
     # interpolate by step size
     num_points = int(total_len / step)
+    # Arg1: uniform distance along path length by step size
+    # Arg2:  Arc length along the fine resolution.
+    # Use interpolation to find corresponding u from the path length
+    # That converts your spline from being parameterized arbitrarily by u into something that is approximately
+    # parameterized by physical distance along the path
     u_uniform = np.interp(np.linspace(0, total_len, num_points), arc_lengths, u_fine)
     final_xp, final_yp = splev(u_uniform, tck)
 
@@ -76,7 +84,6 @@ def get_nn_idx(state: npt.NDArray[np.float64], path: npt.NDArray[np.float64]) ->
         target_idx = nn_idx
     return target_idx
 
-
 def get_ref_trajectory(
     state: npt.NDArray[np.float64],
     path: npt.NDArray[np.float64],
@@ -101,29 +108,37 @@ def get_ref_trajectory(
         Array of shape (4, K+1) with rows [x, y, v, heading] representing
         the reference trajectory over the horizon.
     """
-    K = int(T / DT)
+    K = int(T / DT) # length of control horizon
 
     # Allocate K + 1 elements to map exactly from k=0 (initial) to k=K (terminal)
     xref = np.zeros((4, K + 1))
     ind = get_nn_idx(state, path)
 
     # Calculate cumulative distance along the path
+    # todo could be in its own path class
     cdist = np.append(
         [0.0], np.cumsum(np.hypot(np.diff(path[0, :]), np.diff(path[1, :])))
     )
+    # Assumes path points have strictly increasing
+    # cumulative distance (remove duplicates first).
     cdist = np.clip(cdist, cdist[0], cdist[-1])
 
     start_dist = cdist[ind]
 
     # range is (0, K + 1) to include the t=0 starting node
+    # using target velocity to look ahead of the path and find where the vehicle will be along the path
+    # for the control horizon
+    # the desired path indexes at the predicted path distance
+    # todo replace with a speed profile or with upcoming curvature modifiers
     interp_points = [d * DT * target_v + start_dist for d in range(0, K + 1)]
 
     # Compute interpolation (automatically maps across all K + 1 points)
-    # Finds the
+    # Based on the prediction of the control horizon, we interpolate to get accurate and evenly spaced
+    # x,y, theta predictions along the control horizon
+    # ie convert path distance to xy
     xref[0, :] = np.interp(interp_points, cdist, path[0, :])
     xref[1, :] = np.interp(interp_points, cdist, path[1, :])
-    # xref[0, :] = np.interp(interp_points, cdist, path[0, :])
-    # xref[1, :] = np.interp(interp_points, cdist, path[1, :])
+
     xref[2, :] = target_v
     xref[3, :] = np.interp(interp_points, cdist, path[2, :])
 
@@ -132,12 +147,14 @@ def get_ref_trajectory(
     xref[2, stop_idx] = 0.0
 
     if ego_frame:
-        dx = xref[0, :] - state[0]
-        dy = xref[1, :] - state[1]
-        xref[0, :] = dx * np.cos(-state[3]) - dy * np.sin(-state[3])  # Local X
-        xref[1, :] = dy * np.cos(-state[3]) + dx * np.sin(-state[3])  # Local Y
+        theta = state[3]
+        rot = np.array(
+            [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        )
+        xref[0:2, :] = rot.T @ (xref[0:2, :] - state[0:2, None])
 
         xref[3, :] = xref[3, :] - state[3]  # Local Theta
+
 
     # Continuous angle smoothing
     def fix_angle_reference(angle_ref, angle_init):

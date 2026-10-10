@@ -1,0 +1,26 @@
+target_speed: 1.0
+path:
+  waypoints_x: [0, 3, 4, 6, 10, 11, 12, 6, 1, 0]
+  waypoints_y: [0, 0, 2, 4, 3, 3, -1, -6, -2, -2]
+  altitude: 2.0  # Every waypoint is 2 m above the ground.
+  interpolation_step: 0.05
+start:
+  x: 0.0
+  y: 0.3
+  z: 2.0
+  heading: 0.0
+  velocity: 0.0
+vertical:
+  max_vz: 1.0
+  max_az: 1.5
+  max_jerk_z: 3.0
+goal_threshold: 0.2
+sensor:
+  max_range: 4.0
+  fov_deg: 90.0
+# Obstacles use the existing XY half-planes, interpreted as vertical columns.
+obstacles:
+  - {distance: 3.0, speed: 0.1, radius: 0.4, lateral_offset: 0.3}
+  - {distance: 5.5, speed: 0.25, radius: 0.3, lateral_offset: -0.25}
+  - {distance: 8.5, speed: 0.2, radius: 0.5, lateral_offset: 0.35}
+  - {distance: 13.5, speed: 0.2, radius: 0.5, lateral_offset: 0.35}

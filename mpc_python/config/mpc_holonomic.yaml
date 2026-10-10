@@ -4,14 +4,14 @@ model:
     radius: 0.25
 
     # Independent world/local-frame velocity limits.
-    max_vx: 2.0             # m/s
-    max_vy: 2.0             # m/s
-    max_yaw_rate: 1.5       # rad/s
+    max_vx: 2.0             # Maximum x velocity (m/s).
+    max_vy: 2.0             # Maximum y velocity (m/s).
+    max_yaw_rate: 1.5       # Max yaw speed/rate (rad/s).
 
     # MPC inputs: [ax, ay, angular_acceleration].
-    max_ax: 1.5             # m/s^2
-    max_ay: 1.5             # m/s^2
-    max_yaw_accel: 2.0      # rad/s^2
+    max_ax: 1.5             # Maximum acceleration limit (m/s**2).
+    max_ay: 1.5             # Maximum acceleration limit (m/s**2).
+    max_yaw_accel: 2.0      # Maximum angular acceleration limit (m/s**2).
 
     # Same concept as max_d_acc in the car controller: acceleration slew rate.
     max_jerk_x: 3.0         # m/s^3
@@ -20,22 +20,29 @@ model:
 
 controller:
   prediction:
-    horizon_time: 4.0       # seconds
-    timestep: 0.2           # seconds
+    horizon_time: 4.0       # Control Horizon: How far into the future the MPC optimizes (seconds).
+    timestep: 0.2           # Discretization interval (seconds).
 
   # State mapping:
   # [x, y, vx, vy, theta, omega]
+  # State Vectors mapping:   [Along-track error, Cross-track error, Theta error, Vx error, Vy error, VTheta error]
+  # Control Vectors mapping: [Ax, Ay, angular_acceleration]
   weights:
-    state_cost: [40, 40, 8, 8, 12, 3]
-    final_state_cost: [80, 80, 12, 12, 20, 5]
+    state_cost: [10, 10, 12, 8, 8, 3] # [40, 40, 8, 8, 12, 3]
 
-    # Input mapping:
-    # [ax, ay, angular_acceleration]
+    # Terminal State Cost: Penalizes errors at the final step (N) of the prediction horizon.
+    final_state_cost: [10, 10, 20, 12, 12, 5] # [80, 80, 12, 12, 20, 5]
+
+    # Control Effort Cost: Penalizes large control inputs to save energy and prevent aggressive over-actuation.
     input_cost: [1.0, 1.0, 0.5]
 
-    # Penalizes changes in acceleration -> smoother jerk.
+    # Control Rate Cost: Penalizes changes in acceleration -> smoother jerk.
     input_rate_cost: [5.0, 5.0, 2.0]
 
   obstacle:
-    safety_margin: 0.25
+    safety_margin: 0.25 # Inflation buffer (m) added around the vehicle for obstacle avoidance.
+
+    # Soft Constraint Slack Penalty: A massive weight penalizing safety margin violations.
+    # Using a high "slack" value prevents the MPC solver from crashing (infeasible solution)
+    # if an obstacle cannot be avoided perfectly, while heavily forcing the optimizer to choose safety first.
     slack_penalty: 100000

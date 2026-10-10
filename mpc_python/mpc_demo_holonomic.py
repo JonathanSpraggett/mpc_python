@@ -11,7 +11,7 @@ import numpy.typing as npt
 import yaml
 
 from cvxpy_mpc.holonomic_mpc import HolonomicMPC
-from cvxpy_mpc.holonomic_utils import get_holonomic_ref_trajectory
+from cvxpy_mpc.holonomic_utils import get_holonomic_ref_trajectory2
 from cvxpy_mpc.utils import (
     compute_path_from_wp,
     detect_obstacle_camera,
@@ -96,7 +96,7 @@ class HolonomicMPCSim:
 
             obstacle = self._detect_obstacle()
 
-            target = get_holonomic_ref_trajectory(
+            target = get_holonomic_ref_trajectory2(
                 self.state,
                 self.path,
                 self.target_speed,
