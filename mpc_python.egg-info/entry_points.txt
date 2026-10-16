@@ -1,0 +1,2 @@
+[console_scripts]
+holonomic_mpc_node = mpc_python.holonomic_mpc_node:main

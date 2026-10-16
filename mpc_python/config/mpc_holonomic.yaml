@@ -24,7 +24,7 @@ controller:
     timestep: 0.2           # Discretization interval (seconds).
 
   # State mapping:
-  # [x, y, vx, vy, theta, omega]
+  # [x, y, theta, vx, vy, omega]
   # State Vectors mapping:   [Along-track error, Cross-track error, Theta error, Vx error, Vy error, VTheta error]
   # Control Vectors mapping: [Ax, Ay, angular_acceleration]
   weights:

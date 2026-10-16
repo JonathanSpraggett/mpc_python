@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: mpc-python
 Version: 0.1.0
 Summary: Model Predictive Control for path-following problems
-Requires-Python: >=3.11
+Requires-Python: >=3.10
 License-File: LICENSE
 Requires-Dist: numpy<2
 Requires-Dist: matplotlib
@@ -12,7 +12,7 @@ Requires-Dist: scipy
 Requires-Dist: osqp
 Requires-Dist: sympy
 Requires-Dist: pyyaml
-Requires-Dist: scipy-stubs~=1.17.1
+Requires-Dist: scipy-stubs
 Requires-Dist: ipykernel>=7.3.0
 Provides-Extra: notebook
 Requires-Dist: jupyterlab>=4; extra == "notebook"

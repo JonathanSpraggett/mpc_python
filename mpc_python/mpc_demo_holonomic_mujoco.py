@@ -15,7 +15,7 @@ import numpy.typing as npt
 import yaml
 
 from cvxpy_mpc.holonomic_mpc import HolonomicMPC
-from cvxpy_mpc.holonomic_utils import get_holonomic_ref_trajectory
+from cvxpy_mpc.holonomic_utils import get_holonomic_ref_trajectory, get_holonomic_ref_trajectory2
 from cvxpy_mpc.utils import (
     compute_errors,
     compute_path_from_wp,
@@ -180,7 +180,7 @@ def controller_loop(
             previous_solve_time,
         )
 
-        target = get_holonomic_ref_trajectory(
+        target = get_holonomic_ref_trajectory2(
             pred_state,
             path,
             target_speed,
@@ -316,7 +316,7 @@ def draw_sensor_fov(
     fov_deg: float,
 ) -> None:
     half_fov = 0.5 * np.radians(fov_deg)
-    origin = np.array([x, y, 0.04], dtype=np.float64)
+    origin = np.array([x, y, 0.0], dtype=np.float64)
     rgba = np.array([0.95, 0.85, 0.1, 0.25], dtype=np.float32)
 
     angles = np.linspace(yaw - half_fov, yaw + half_fov, 24)

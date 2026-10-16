@@ -6,7 +6,7 @@ scipy
 osqp
 sympy
 pyyaml
-scipy-stubs~=1.17.1
+scipy-stubs
 ipykernel>=7.3.0
 
 [dev]

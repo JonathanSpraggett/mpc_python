@@ -6,7 +6,7 @@ requires = ["setuptools>=64"]
 name = "mpc-python"
 version = "0.1.0"
 description = "Model Predictive Control for path-following problems"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "numpy<2",
     "matplotlib",
@@ -16,7 +16,7 @@ dependencies = [
     "osqp",
     "sympy",
     "pyyaml",
-    "scipy-stubs~=1.17.1",
+    "scipy-stubs",
     "ipykernel>=7.3.0",
 ]
 
@@ -32,6 +32,12 @@ dev = [
     "black>=24",
     "ruff",
 ]
+
+[project.scripts]
+holonomic_mpc_node = "mpc_python.holonomic_mpc_node:main"
+
+[tool.setuptools.package-data]
+mpc_python = ["config/*.yaml"]
 
 [tool.setuptools.packages.find]
 where = ["."]

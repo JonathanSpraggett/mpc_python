@@ -63,6 +63,7 @@ class HolonomicMPC:
             if horizon_time is not None
             else prediction_config["horizon_time"]
         )
+        self.horizon_time: float = horizon_time
         self.control_horizon: int = int(horizon / self.dt)
 
         state_cost_weights = (
@@ -480,6 +481,11 @@ class HolonomicMPC:
         self._previous_command = np.asarray(self._controls.value, dtype=float)
 
         return self._previous_trajectory, self._previous_command
+
+    def reset(self) -> None:
+        """Discard command and trajectory history before starting a new mission."""
+        self._previous_command = None
+        self._previous_trajectory = None
 
     def _controlled_stop(
         self, initial_state: npt.NDArray[np.float64]

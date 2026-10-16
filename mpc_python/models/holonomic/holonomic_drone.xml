@@ -1,6 +1,6 @@
 <mujoco model="planar_holonomic_drone">
   <!--
-    Simple planar MuJoCo plant for the holonomic MPC demo.
+    Planar holonomic drone with BODY-FRAME velocity commands.
 
     Generalized coordinates / velocities:
       x_joint   -> world X position / vx
@@ -8,8 +8,15 @@
       yaw_joint -> yaw / yaw_rate
 
     The x/y slide joints are defined before the yaw hinge so their axes remain
-    fixed in the world frame.  This matches the MPC state convention where
-    vx and vy are independent world/local-navigation-frame velocities.
+    fixed in the world frame. State readout therefore remains identical to
+    holonomic_drone.xml; only the actuator command convention changes:
+      vx_servo       -> forward velocity along body +X (m/s)
+      vy_servo       -> lateral velocity along body +Y (m/s)
+      yaw_rate_servo -> angular velocity about body +Z (rad/s)
+
+    At yaw=+pi/2, positive vx_cmd moves along world +Y, and positive vy_cmd
+    moves along world -X. Convert measured world velocities with R(yaw)^T
+    when comparing them with these setpoints or initializing the controls.
   -->
 
   <compiler autolimits="true"/>
@@ -39,6 +46,10 @@
       <!-- Explicit planar vehicle inertia. -->
       <inertial pos="0 0 0" mass="2.0" diaginertia="0.045 0.045 0.075"/>
 
+      <!-- Body-aligned actuator frame at the center of mass. No refsite:
+           transmission directions and velocity feedback follow this site. -->
+      <site name="body_velocity_frame" pos="0 0 0" size="0.005" rgba="0 0 0 0"/>
+
       <!-- Simple quad/drone-like visual body.  Contacts are disabled because
            altitude is constrained by the planar joint model. -->
       <geom type="box" size="0.13 0.09 0.045" rgba="0.18 0.45 0.8 1"
@@ -65,13 +76,24 @@
 
   <actuator>
     <!--
-      These are LOW-LEVEL velocity servos, not the MPC inputs.
-      The Python demo integrates [ax, ay, alpha] every physics step to produce
-      continuously-ramped [vx_cmd, vy_cmd, yaw_rate_cmd], just like the car
-      demo integrates acceleration into its wheel velocity target.
+      These are LOW-LEVEL body-frame velocity servos, not acceleration inputs.
+      Site gear vectors are [Fx, Fy, Fz, Tx, Ty, Tz] in the rotating site frame.
+      The velocity feedback is projected onto the same local axes.
+
+      Send body-frame velocity targets directly. The original demo's world-
+      frame acceleration integration cannot be used unchanged: integrate in
+      world coordinates, then rotate the velocity target into the CURRENT
+      body frame on each physics step before assigning data.ctrl.
     -->
     <velocity name="vx_servo" joint="x_joint" kv="20" forcerange="-20 20"/>
     <velocity name="vy_servo" joint="y_joint" kv="20" forcerange="-20 20"/>
     <velocity name="yaw_rate_servo" joint="yaw_joint" kv="4" forcerange="-3 3"/>
+
+<!--    <velocity name="vx_servo"  site="body_velocity_frame"  gear="1 0 0 0 0 0"-->
+<!--              kv="20" forcerange="-20 20"/>-->
+<!--    <velocity name="vy_servo"  site="body_velocity_frame" gear="0 1 0 0 0 0"-->
+<!--              kv="20" forcerange="-20 20"/>-->
+<!--    <velocity name="yaw_rate_servo" site="body_velocity_frame" gear="0 0 0 0 0 1"-->
+<!--              kv="4" forcerange="-20 20"/>-->
   </actuator>
 </mujoco>

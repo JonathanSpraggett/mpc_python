@@ -1,3 +1,5 @@
 img
 mpc_python
 notebooks
+resource
+tests

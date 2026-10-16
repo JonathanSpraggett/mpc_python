@@ -1,8 +1,6 @@
 import numpy as np
 import numpy.typing as npt
 from scipy.interpolate import splprep, splev
-
-
 def compute_path_from_wp(
     start_xp: list[float] | npt.NDArray[np.float64],
     start_yp: list[float] | npt.NDArray[np.float64],
@@ -49,6 +47,8 @@ def compute_path_from_wp(
     theta = np.arctan2(dy, dx)
 
     return np.vstack((final_xp, final_yp, theta))
+
+
 
 
 def get_nn_idx(state: npt.NDArray[np.float64], path: npt.NDArray[np.float64]) -> int:
